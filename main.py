@@ -1,7 +1,7 @@
 from src.interrogation import get_schema
 from src.sql_pipeline import answer_question
 
-schema = get_schema
+schema = get_schema()
 def main():
 
     while True:

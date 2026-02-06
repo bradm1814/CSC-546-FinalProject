@@ -1,5 +1,6 @@
 from src.db import Transaction
 from sqlalchemy.inspection import inspect
+from src.llm import call_sqlcoder
 
 def get_schema():
     mapper = inspect(Transaction)
@@ -22,39 +23,26 @@ Rules:
 
 def build_sql_prompt(schema: str, question: str) -> str:
     return f"""
-    You are an assistant that writes SQL queries for a SQLite database.
-
-Rules:
-- Use ONLY the tables and columns listed in the schema.
-- Do NOT invent tables or columns.
-- If the schema does not contain the required data, respond exactly with:
-  "The schema does not contain the required data."
-- Return ONLY SQL. No explanation, no markdown.
-- Use simple SQL unless the question requires complexity.
-- Use correct column names exactly as provided.
-- If the question is ambiguous, choose the most reasonable interpretation.
-
+Write a SQL query.
+Use only the tables and columns in the schema.
+Do not invent tables or columns.
+Return only SQL. No explanation, no comments, no markdown.
+If the schema does not contain the required data, return:
+The schema does not contain the required data.
 Schema:
 {schema}
-
-User Question:
+Question:
 {question}
+SQL:
 """
 
 
-def generate_sql(llm, schema: str, question: str) -> str:
+def generate_sql(schema: str, question: str) -> str:
+
     prompt = build_sql_prompt(schema, question)
 
-    response = llm(
-        system=SQL_SYSTEM_PROMPT,
-        prompt=prompt,
-        max_tokens=300,
-        temperature=0
-    )
+    response = call_sqlcoder(prompt)
 
     sql = response.strip()
 
-    if not sql.lower().startswith("select"):
-        raise ValueError("Generated SQL does not start with SELECT statement")
-    
     return sql
