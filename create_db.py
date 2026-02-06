@@ -6,7 +6,7 @@ import pandas as pd
 def create_SQL_from_data():
 
     #read in csv
-    df = pd.read_csv(r"data\Supplier_transaction_data.csv")
+    df = pd.read_csv(r"data\mock_tmacs.csv")
 
     #create SQL session
     session = SessionLocal()
